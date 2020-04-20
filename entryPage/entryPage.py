@@ -85,8 +85,7 @@ class Toplevel1:
         self.instruction.configure(text='''Enter your username and your password:''')
 
         self.entry_username = tk.Entry(self.Frame1)
-        self.entry_username.place(relx=0.313, rely=0.471, height=30
-                , relwidth=0.303)
+        self.entry_username.place(relx=0.313, rely=0.471, height=30, relwidth=0.303)
         self.entry_username.configure(background="white")
         self.entry_username.configure(disabledforeground="#a3a3a3")
         self.entry_username.configure(font="TkFixedFont")
@@ -124,9 +123,21 @@ class Toplevel1:
         self.Label_username.configure(highlightcolor="black")
         self.Label_username.configure(text='''username''')
 
+        self.Label_error = tk.Label(self.Frame1)
+        self.Label_error.place(relx=0.087, rely=0.75, height=31, width=350)
+        self.Label_error.configure(activebackground="#690f96")
+        self.Label_error.configure(activeforeground="white")
+        self.Label_error.configure(activeforeground="#000000")
+        self.Label_error.configure(background="#b366ff")
+        self.Label_error.configure(disabledforeground="#a3a3a3")
+        self.Label_error.configure(font="-family {Tw Cen MT} -size 14 -weight bold")
+        self.Label_error.configure(foreground="red")
+        self.Label_error.configure(highlightbackground="#d9d9d9")
+        self.Label_error.configure(highlightcolor="black")
+        self.Label_error.configure(text="")
+
         self.entry_password = tk.Entry(self.Frame1)
-        self.entry_password.place(relx=0.313, rely=0.62, height=30
-                , relwidth=0.303)
+        self.entry_password.place(relx=0.313, rely=0.62, height=30, relwidth=0.303)
         self.entry_password.configure(background="white")
         self.entry_password.configure(disabledforeground="#a3a3a3")
         self.entry_password.configure(font="TkFixedFont")
@@ -173,7 +184,7 @@ class Toplevel1:
         self.Label1.configure(foreground="#ffffff")
         self.Label1.configure(highlightbackground="#d9d9d9")
         self.Label1.configure(highlightcolor="black")
-        self.Label1.configure(text='''Registration''')
+        self.Label1.configure(text='''Login''')
 
         self.button_forgot = tk.Button(self.Frame1)
         self.button_forgot.place(relx=0.365, rely=0.819, height=54, width=177)

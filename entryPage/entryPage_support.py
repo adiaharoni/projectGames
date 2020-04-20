@@ -1,6 +1,18 @@
 import sys
 import sqlite3
 from tkinter import *
+import clientBL
+
+def fe_login_res(status_code, status_txt):
+    global w
+    print('loginRes')
+    sys.stdout.flush()
+    src = w.Label_error
+    src.configure(text=status_txt + " (" + status_code + ")")
+    """
+    sys.path.append('..\\forgotPage')
+    import forgotPage
+    forgotPage.create_Toplevel1(root, 'Hello', top_level)"""
 
 try:
     import ttk
@@ -17,19 +29,7 @@ def xxx(p1):
     to = w.entry_password
     password1 = to.get()
     print(username1+" "+password1)
-    sys.path.append('..\\newRegistrationPage')
-    conn = sqlite3.connect('user24.db')
-    cursor = conn.execute(
-    "SELECT * from USERS where username= '"+username1+ "' and password= '"+password1+"'")
-    rows = cursor.fetchall()  
-    if len(rows) == 0:
-        print("not in db! you should re-register")
-    else:
-       print("is in db!")
-    conn.commit()
-    conn.close()
-    sys.stdout.flush()
-
+    clientBL.login(fe_login_res, username1, password1)
 
 def startNewRegistrationPage():
     sys.stdout.flush()
@@ -48,6 +48,7 @@ def init(top, gui, *args, **kwargs):
     w = gui
     top_level = top
     root = top
+    clientBL.init()
 
 def destroy_window():
     # Function which closes the window.

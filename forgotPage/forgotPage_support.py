@@ -1,5 +1,16 @@
 import sqlite3
 import sys
+import clientBL
+
+def fe_forgot_password_res(status_code, status_txt, password):
+    global w
+    print('forgot_password_Res')
+    sys.stdout.flush()
+    src = w.error_label
+    if int(status_code) == 0:
+        src.configure(text = "your password: " +password)
+    else:
+        src.configure(text="error:"+status_txt + " (" + status_code + ")")
 
 try:
     import Tkinter as tk
@@ -25,20 +36,7 @@ def xxx(p1):
     mothersName = w.motherName_entry
     mothersName1 = mothersName.get()
     print(username1 + " " + city1 + " " + birthYear1 + " " + mothersName1)
-    sys.path.append('..\\newRegistrationPage')
-    conn = sqlite3.connect('user24.db')
-    cursor = conn.execute(
-    "SELECT * from USERS where username= '"+username1+ "' and city= '"+city1+"' and birthYear= '"+birthYear1+"' and mothersName= '"+mothersName1+"'")
-    rows = cursor.fetchall()
-    if len(rows) == 0:
-        print("not in db! you should re-register")
-    else:
-        cursor = conn.execute("SELECT * from users")
-        for row in cursor:
-            print("password = ", row[1], "\n")
-    conn.commit()
-    conn.close()
-    sys.stdout.flush()
+    clientBL.forgot_password(fe_forgot_password_res, username1, city1, birthYear1, mothersName1)
 
 def backMenuPage():
     sys.stdout.flush()
