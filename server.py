@@ -70,12 +70,15 @@ def register(time1, username, command, sender_msg):
     idx = idx+2
     mothersName = sender_msg[idx:idx + mothersNamelen]
     print("mothersName:"+mothersName)
-    return str(serverBL.register(username, password, city, birthYear, mothersName)).zfill(2)
+    statusCode = serverBL.register(username, password, city, birthYear, mothersName)
+    return str(command).zfill(2) + str(statusCode).zfill(2)
+
 def login(time1, username, command, sender_msg):
     passwordlen = int(sender_msg[0:2])
     idx = 2
     password = sender_msg[idx:idx + passwordlen]
-    return str(serverBL.login(username, password)).zfill(2)
+    statusCode = serverBL.login(username, password)
+    return str(command).zfill(2) + str(statusCode).zfill(2)
 
 def forgotPassword(time1, username, command, sender_msg):
     citylen = int(sender_msg[0:2])
@@ -87,8 +90,8 @@ def forgotPassword(time1, username, command, sender_msg):
     mothersNamelen = int(sender_msg[idx:idx + 2])
     idx = idx + 2
     mothersName = sender_msg[idx:idx + mothersNamelen]
-    (ret, password)= serverBL.forgotPassword(username, city, birthYear, mothersName)
-    return str(ret).zfill(2)+str(len(password)).zfill(2)+password
+    (statusCode, password)= serverBL.forgotPassword(username, city, birthYear, mothersName)
+    return str(command).zfill(2)+str(statusCode).zfill(2)+str(len(password)).zfill(2)+password
 
 while (True):
     rlist, wlist, xlist = select.select([server_socket] + open_client_sockets, open_client_sockets, [])
@@ -115,7 +118,7 @@ while (True):
                     ret = forgotPassword(time1, username, command, sender_msg)
                 else:
                     #command unknown
-                    ret = "99"
+                    ret = str(command).zfill(2) +"99"
                 print("sending: " + ret)
                 data = str.encode(ret)
                 current_socket.send(data)

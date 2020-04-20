@@ -1,25 +1,56 @@
 from time import sleep
 import clientComm
 
-def get_srv_res_status():
-    (status_code, status_txt) = clientComm.get_srv_res_status()
-    while (status_code==None):
-        (status_code, status_txt) = clientComm.get_srv_res_status()
-        sleep(0.05)
-    return (status_code, status_txt)
+_fe_login_res = None
+_fe_register_res = None
+_fe_forgot_password_res = None
+_username = ""
 
-clientComm.init()
-clientComm.register("guy", "1234", "hod hasharon", "1972", "neora")
-(status_code, status_txt) =get_srv_res_status()
-print("status_code=" + str(status_code) + " text:" + status_txt)
 
-clientComm.login("guy", "1234")
-(status_code, status_txt) =get_srv_res_status()
-print("status_code=" + str(status_code) + " text:" + status_txt)
+def init():
+    clientComm.init()
 
-clientComm.forgot_password("guy", "hod hasharon", "1972", "neora")
-(status_code, status_txt, password) = clientComm.get_forgot_password_res()
-while (status_code == None):
-    (status_code, status_txt, password) = clientComm.get_forgot_password_res()
-    sleep(0.05)
-print("status_code=" + str(status_code) + " text:" + status_txt + " password:" + password)
+
+def register(fe_register_res,username, password, city, birthYear, mothersName):
+    global _fe_register_res
+    _fe_register_res = fe_register_res
+    global _username
+    _username = username
+    clientComm.register(register_res,username, password, city, birthYear, mothersName)
+
+
+def login(fe_login_res, username, password):
+    global _fe_login_res
+    _fe_login_res = fe_login_res
+    global _username
+    _username = username
+    clientComm.login(login_res,username, password)
+
+
+def forgot_password(fe_forgot_password_res, username, city, birthYear, mothersName):
+    global _fe_forgot_password_res
+    _fe_forgot_password_res = fe_forgot_password_res
+    global _username
+    _username = username
+    clientComm.forgot_password(forgot_password_res, username, city, birthYear, mothersName)
+
+
+def register_res(status_code, status_txt):
+    print("BL status_code=" + str(status_code) + " text:" + status_txt)
+    global _fe_register_res
+    _fe_register_res(status_code, status_txt)
+
+
+def login_res(status_code, status_txt):
+    print("BL status_code=" + str(status_code) + " text:" + status_txt)
+    global _fe_login_res
+    _fe_login_res(status_code, status_txt)
+
+
+def forgot_password_res(status_code, status_txt, password):
+    if password == 00:
+        print("BL status_code=" + str(status_code) + " text:" + status_txt+ " password: "+ str(password))
+    else:
+        print("BL status_code=" + str(status_code) + " text:" + status_txt )
+    global _fe_forgot_password_res
+    _fe_forgot_password_res(status_code, status_txt, password)

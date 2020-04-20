@@ -44,18 +44,21 @@ def login(username, password):
 
 def forgotPassword(username, city, birthYear, mothersName):
     print("forgotPassword")
+    query = "SELECT * from USERS where username= '" + username + "' and city= '" + city + "' and birthYear= '" + birthYear + "' and mothersName= '" + mothersName + "'"
+    print("query = ", query, "\n")
     conn = sqlite3.connect('user24.db')
-    cursor = conn.execute(
-        "SELECT * from USERS where username= '" + username + "' and city= '" + city + "' and birthYear= '" + birthYear + "' and mothersName= '" + mothersName + "'")
+    cursor = conn.execute(query)
     rows = cursor.fetchall()
-    password=""
+    password = ""
+    ret = 0
     if len(rows) == 0:
         print("not in db! you should re-register")
         ret = 7 #error: user not found
     else:
-        cursor = conn.execute("SELECT * from users")
-        for row in cursor:
-            password=row[1]
+        print("read password")
+        for row in rows:
+            print("in cursor")
+            password = row[1]
             print("password = ", password, "\n")
             ret = 0 #ok
     conn.commit()
