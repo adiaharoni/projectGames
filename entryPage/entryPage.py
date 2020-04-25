@@ -108,7 +108,7 @@ class Toplevel1:
         self.login.configure(highlightcolor="black")
         self.login.configure(pady="0")
         self.login.configure(text='''login''')
-        self.login.bind('<Button-1>', lambda e: entryPage_support.xxx(e))
+        self.login.bind('<Button-1>', lambda e: entryPage_support.login(e))
 
         self.Label_username = tk.Label(self.Frame1)
         self.Label_username.place(relx=0.087, rely=0.471, height=31, width=84)

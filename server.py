@@ -7,8 +7,8 @@ server_socket = socket.socket()
 server_socket.bind(("127.0.0.1", 2223))
 server_socket.listen(5)
 open_client_sockets = []
-users = {}
 messages_to_send = []
+users = {}
 
 def send_waiting_messages(wlist):
     for message in messages_to_send:
@@ -31,19 +31,20 @@ def parse_header(data):
     # parse the mesg
     recvdata = data.decode()
     print("recvdata:"+recvdata)
-    time1 = recvdata[0:14]
+    # command
+    idx=0
+    command = int(recvdata[idx:idx + 2])
+    print("command:"+recvdata[idx:idx + 2])
+    idx = idx + 2
+    time1 = recvdata[idx:idx+14]
     print("time1:"+time1)
-    idx = 14
+    idx = idx+14
     namelen = int(recvdata[idx:idx + 2])
     print ("namelen:"+recvdata[idx:idx + 2])
     idx = idx + 2
     username = recvdata[idx:idx + namelen]
     print("username:"+username)
     idx = idx + namelen
-    # command
-    command = int(recvdata[idx:idx + 2])
-    print("command:"+recvdata[idx:idx + 2])
-    idx = idx + 2
     sender_msg = recvdata[idx:]
     print("sender_msg:"+sender_msg)
     return (time1, username, command, sender_msg)
@@ -73,11 +74,13 @@ def register(time1, username, command, sender_msg):
     statusCode = serverBL.register(username, password, city, birthYear, mothersName)
     return str(command).zfill(2) + str(statusCode).zfill(2)
 
-def login(time1, username, command, sender_msg):
+def login(socket, time1, username, command, sender_msg):
     passwordlen = int(sender_msg[0:2])
     idx = 2
     password = sender_msg[idx:idx + passwordlen]
     statusCode = serverBL.login(username, password)
+    if statusCode == 0:
+        users[username] = socket
     return str(command).zfill(2) + str(statusCode).zfill(2)
 
 def forgotPassword(time1, username, command, sender_msg):
@@ -93,6 +96,30 @@ def forgotPassword(time1, username, command, sender_msg):
     (statusCode, password)= serverBL.forgotPassword(username, city, birthYear, mothersName)
     return str(command).zfill(2)+str(statusCode).zfill(2)+str(len(password)).zfill(2)+password
 
+
+def startGame(username, gameId, gameNumber, score , opponentUsername, opponentScore, opponentGameNumber):
+    time = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    print("username: "+ username + " gameId: " + gameId+ " gameNumber:" +gameNumber+ " score: "+ str(score) + " opponentUsername: " +opponentUsername+ " opponentScore:" + str(opponentScore)+ " opponentGameNumber: "+opponentGameNumber)
+
+    strScore =str(score)
+    sender_message = str(gameId).zfill(2) + str(gameNumber) + str(len(strScore)).zfill(2) + strScore
+    sender_message += str(len(str(opponentScore))).zfill(2) + str(opponentScore) + str(opponentGameNumber)
+    str_data = "05" + time + str(len(opponentUsername)).zfill(2) + opponentUsername + sender_message
+    print("start game:"+ str_data)
+    messages_to_send.append((users[username], str.encode(str_data)))
+
+
+def wantToPlay(time1, username, command, sender_msg):
+    gameID = sender_msg[0:2]
+    gameNumber = sender_msg[2:]
+    print("gameID:"+ gameID + " gameNumber:"+ gameNumber)
+    (statusCode, username, score, gameNumber, username1, score1, gameNumber1) = serverBL.wantToPlay(username, gameID, gameNumber)
+    ret = str(command).zfill(2)+str(statusCode).zfill(2) + str(gameNumber)
+    if statusCode == 9:
+        startGame(username1, gameID, gameNumber1, score1, username, score, gameNumber)
+        ret = ret + str(len(str(score))).zfill(2)+ str(score) + str(len(username1)).zfill(2) + username1 + str(len(str(score1))).zfill(2) + str(score1) + str(gameNumber1)
+    return ret
+
 while (True):
     rlist, wlist, xlist = select.select([server_socket] + open_client_sockets, open_client_sockets, [])
     for current_socket in rlist:
@@ -106,6 +133,9 @@ while (True):
             data = current_socket.recv(1024)
             if data == "":
                 open_client_sockets.remove(current_socket)
+                for username, socket in users.items():
+                    if socket == current_socket:
+                        del users[username]
                 print ("Connection with client closed.")
             else:
                 (time1, username, command, sender_msg) = parse_header(data)
@@ -113,12 +143,15 @@ while (True):
                 if command == 1:
                     ret = register(time1, username, command, sender_msg)
                 elif command == 2:
-                    ret = login(time1, username, command, sender_msg)
+                    ret = login(current_socket, time1, username, command, sender_msg)
                 elif command == 3:
                     ret = forgotPassword(time1, username, command, sender_msg)
+                elif command == 4:
+                    ret = wantToPlay(time1, username, command, sender_msg)
                 else:
                     #command unknown
-                    ret = str(command).zfill(2) +"99"
+                    ret = str(command).zfill(2) + "99"
                 print("sending: " + ret)
                 data = str.encode(ret)
                 current_socket.send(data)
+    send_waiting_messages(wlist)

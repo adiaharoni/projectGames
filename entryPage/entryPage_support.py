@@ -1,18 +1,21 @@
 import sys
 import sqlite3
 from tkinter import *
+sys.path.append('..\\')
 import clientBL
 
 def fe_login_res(status_code, status_txt):
     global w
     print('loginRes')
     sys.stdout.flush()
-    src = w.Label_error
-    src.configure(text=status_txt + " (" + status_code + ")")
-    """
-    sys.path.append('..\\forgotPage')
-    import forgotPage
-    forgotPage.create_Toplevel1(root, 'Hello', top_level)"""
+    if status_code == "00":
+        sys.stdout.flush()
+        sys.path.append('..\\chooseGamePage')
+        import chooseGamePage
+        chooseGamePage.create_Toplevel1(root, 'Hello', top_level)
+    else:
+        src = w.Label_error
+        src.configure(text=status_txt + " (" + status_code + ")")
 
 try:
     import ttk
@@ -21,15 +24,17 @@ except ImportError:
     import tkinter.ttk as ttk
     py3 = True
 
-def xxx(p1):
+def login(p1):
     global w
     print('entryPage_support.xxx')
-    src = w.entry_username
-    username1 = src.get()
-    to = w.entry_password
-    password1 = to.get()
-    print(username1+" "+password1)
-    clientBL.login(fe_login_res, username1, password1)
+    username = w.entry_username.get()
+    password = w.entry_password.get()
+    print(username+" "+password)
+    if username == "" or password == "" or username.isspace()== True or password.isspace() == True:
+        src = w.Label_error
+        src.configure(text="Error: The fills cannot be empty")
+    else:
+        clientBL.login(fe_login_res, username, password)
 
 def startNewRegistrationPage():
     sys.stdout.flush()
