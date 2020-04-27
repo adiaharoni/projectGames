@@ -10,100 +10,103 @@ open_client_sockets = []
 messages_to_send = []
 users = {}
 
+
 def send_waiting_messages(wlist):
     for message in messages_to_send:
         (client_socket, data) = message
-        print ("message in messages_to_send")
+        print("message in messages_to_send")
         if client_socket in wlist:
             print("client_socket.send(data)")
             client_socket.send(data)
             messages_to_send.remove(message)
 
 
-def create_mesg(time, username, sender_message):
+def create_msg(time, username, sender_message):
     str_data = time + str(len(username)).zfill(2) + username + "1" + str(len(sender_message)).zfill(2) + sender_message
-    print ("sending: " + str_data)
+    print("sending: " + str_data)
     data = str.encode(str_data)
     return data
+
 
 def parse_header(data):
     # decode- from bytes to string
     # parse the mesg
     recvdata = data.decode()
-    print("recvdata:"+recvdata)
+    print("receive data:"+recvdata)
     # command
-    idx=0
+    idx = 0
     command = int(recvdata[idx:idx + 2])
     print("command:"+recvdata[idx:idx + 2])
     idx = idx + 2
     time1 = recvdata[idx:idx+14]
     print("time1:"+time1)
     idx = idx+14
-    namelen = int(recvdata[idx:idx + 2])
-    print ("namelen:"+recvdata[idx:idx + 2])
+    name_len = int(recvdata[idx:idx + 2])
+    print ("name_len:"+recvdata[idx:idx + 2])
     idx = idx + 2
-    username = recvdata[idx:idx + namelen]
+    username = recvdata[idx:idx + name_len]
     print("username:"+username)
-    idx = idx + namelen
+    idx = idx + name_len
     sender_msg = recvdata[idx:]
     print("sender_msg:"+sender_msg)
-    return (time1, username, command, sender_msg)
+    return time1, username, command, sender_msg
+
 
 def register(time1, username, command, sender_msg):
     print("sender_msg:"+sender_msg)
-    print("passwordlen: " + sender_msg[0:2])
-    passwordlen = int(sender_msg[0:2])
+    print("password len: " + sender_msg[0:2])
+    password_len = int(sender_msg[0:2])
     idx = 2
-    password = sender_msg[idx:idx + passwordlen]
+    password = sender_msg[idx:idx + password_len]
     print("password: " + password)
-    idx = idx + passwordlen
-    print("citylen: " + sender_msg[idx:idx + 2])
-    citylen = int(sender_msg[idx:idx+2])
+    idx = idx + password_len
+    print("city_len: " + sender_msg[idx:idx + 2])
+    city_len = int(sender_msg[idx:idx+2])
     idx = idx+2
-    city = sender_msg[idx:idx + citylen]
+    city = sender_msg[idx:idx + city_len]
     print("city:"+city)
-    idx = idx + citylen
-    birthYear = sender_msg[idx:idx + 4]
-    print("birthYear:"+birthYear)
+    idx = idx + city_len
+    birth_year = sender_msg[idx:idx + 4]
+    print("birth_year:"+birth_year)
     idx = idx + 4
-    print ("mothersNamelen:"+sender_msg[idx:idx+2])
-    mothersNamelen = int(sender_msg[idx:idx+2])
+    print("mother's name len:"+sender_msg[idx:idx+2])
+    mothers_name_len = int(sender_msg[idx:idx+2])
     idx = idx+2
-    mothersName = sender_msg[idx:idx + mothersNamelen]
-    print("mothersName:"+mothersName)
-    statusCode = serverBL.register(username, password, city, birthYear, mothersName)
+    mothers_name = sender_msg[idx:idx + mothers_name_len]
+    print("mothers_name:"+mothers_name)
+    statusCode = serverBL.register(username, password, city, birth_year, mothers_name)
     return str(command).zfill(2) + str(statusCode).zfill(2)
 
 def login(socket, time1, username, command, sender_msg):
-    passwordlen = int(sender_msg[0:2])
+    password_len = int(sender_msg[0:2])
     idx = 2
-    password = sender_msg[idx:idx + passwordlen]
+    password = sender_msg[idx:idx + password_len]
     statusCode = serverBL.login(username, password)
     if statusCode == 0:
         users[username] = socket
     return str(command).zfill(2) + str(statusCode).zfill(2)
 
 def forgotPassword(time1, username, command, sender_msg):
-    citylen = int(sender_msg[0:2])
+    city_len = int(sender_msg[0:2])
     idx = 2
-    city = sender_msg[idx:idx + citylen]
-    idx = idx + citylen
-    birthYear = sender_msg[idx:idx + 4]
+    city = sender_msg[idx:idx + city_len]
+    idx = idx + city_len
+    birth_year = sender_msg[idx:idx + 4]
     idx = idx + 4
-    mothersNamelen = int(sender_msg[idx:idx + 2])
+    mothers_name_len = int(sender_msg[idx:idx + 2])
     idx = idx + 2
-    mothersName = sender_msg[idx:idx + mothersNamelen]
-    (statusCode, password)= serverBL.forgotPassword(username, city, birthYear, mothersName)
+    mothers_name = sender_msg[idx:idx + mothers_name_len]
+    (statusCode, password)= serverBL.forgotPassword(username, city, birth_year, mothers_name)
     return str(command).zfill(2)+str(statusCode).zfill(2)+str(len(password)).zfill(2)+password
 
 
-def startGame(username, gameId, gameNumber, score , opponentUsername, opponentScore, opponentGameNumber):
+def startGame(username, gameId, gameNumber, score , opponentUsername, opponentScore, serverGameNumber):
     time = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-    print("username: "+ username + " gameId: " + gameId+ " gameNumber:" +gameNumber+ " score: "+ str(score) + " opponentUsername: " +opponentUsername+ " opponentScore:" + str(opponentScore)+ " opponentGameNumber: "+opponentGameNumber)
-
+    print("username: "+ username + " gameId: " + gameId+ " gameNumber:" +gameNumber+ " score: "+ str(score) +
+          " opponentUsername: " +opponentUsername+ " opponentScore:" + str(opponentScore) + "serverGameNumber:" +serverGameNumber)
     strScore =str(score)
     sender_message = str(gameId).zfill(2) + str(gameNumber) + str(len(strScore)).zfill(2) + strScore
-    sender_message += str(len(str(opponentScore))).zfill(2) + str(opponentScore) + str(opponentGameNumber)
+    sender_message += str(len(str(opponentScore))).zfill(2) + str(opponentScore) + serverGameNumber
     str_data = "05" + time + str(len(opponentUsername)).zfill(2) + opponentUsername + sender_message
     print("start game:"+ str_data)
     messages_to_send.append((users[username], str.encode(str_data)))
@@ -113,12 +116,34 @@ def wantToPlay(time1, username, command, sender_msg):
     gameID = sender_msg[0:2]
     gameNumber = sender_msg[2:]
     print("gameID:"+ gameID + " gameNumber:"+ gameNumber)
-    (statusCode, username, score, gameNumber, username1, score1, gameNumber1) = serverBL.wantToPlay(username, gameID, gameNumber)
+    (statusCode, username, score, gameNumber, username1, score1, gameNumber1, serverGameNumber) = serverBL.wantToPlay(username, gameID, gameNumber)
     ret = str(command).zfill(2)+str(statusCode).zfill(2) + str(gameNumber)
     if statusCode == 9:
-        startGame(username1, gameID, gameNumber1, score1, username, score, gameNumber)
-        ret = ret + str(len(str(score))).zfill(2)+ str(score) + str(len(username1)).zfill(2) + username1 + str(len(str(score1))).zfill(2) + str(score1) + str(gameNumber1)
+        startGame(username1, gameID, gameNumber1, score1, username, score, serverGameNumber)
+        ret = ret + str(len(str(score))).zfill(2)+ str(score) + str(len(username1)).zfill(2) + username1 + str(len(str(score1))).zfill(2) + str(score1) + serverGameNumber
     return ret
+
+
+def opponentPlayXO(username, opponentUsername, serverGameNumber, cell, status_code):
+    print("Server.opponentPlayXO serverGameNumber:" + serverGameNumber + " cell:" + cell)
+    time = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    sender_message = serverGameNumber + str(cell) + str(status_code).zfill(2)
+    str_data = "07" + time + str(len(opponentUsername)).zfill(2) + opponentUsername + sender_message
+    print("Server.opponentPlayXO sending:" + str_data)
+    messages_to_send.append((users[username], str.encode(str_data)))
+
+def playXO(time1, username, command, sender_msg):
+    serverGameNumber = sender_msg[0:36]
+    cell = sender_msg[36:]
+    print("Server.playXO serverGameNumber:" + serverGameNumber + " cell:" + cell)
+    status_code, opponentUsername = serverBL.playXO(username, serverGameNumber, cell)
+    if status_code == "12":
+        opponentPlayXO(opponentUsername, username, serverGameNumber, cell, "12")
+    elif status_code == "13":
+        opponentPlayXO(opponentUsername, username, serverGameNumber, cell, "14")
+    else:
+        opponentPlayXO(opponentUsername, username, serverGameNumber, cell, status_code)
+    return str(command).zfill(2) + serverGameNumber + str(status_code).zfill(2)
 
 while (True):
     rlist, wlist, xlist = select.select([server_socket] + open_client_sockets, open_client_sockets, [])
@@ -148,6 +173,8 @@ while (True):
                     ret = forgotPassword(time1, username, command, sender_msg)
                 elif command == 4:
                     ret = wantToPlay(time1, username, command, sender_msg)
+                elif command == 6:
+                    ret = playXO(time1, username, command, sender_msg)
                 else:
                     #command unknown
                     ret = str(command).zfill(2) + "99"

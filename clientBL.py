@@ -43,6 +43,19 @@ def want_to_play(fe_want_to_play_res, gameId, game_number):
     global _username
     clientComm.want_to_play(want_to_play_res, _username, gameId, game_number)
 
+def set_play_XO_callback(fe_XO_play_res, serverGameNumber):
+    global _callback_dict
+    print(serverGameNumber)
+    _callback_dict[serverGameNumber] = fe_XO_play_res
+    clientComm.set_play_XO_callback(play_XO_res)
+
+
+def playXO(fe_XO_play_res, serverGameNumber, cell):
+    global _callback_dict
+    print(serverGameNumber)
+    _callback_dict[serverGameNumber] = fe_XO_play_res
+    global _username
+    clientComm.play_XO(play_XO_res, _username, serverGameNumber, cell)
 
 def register_res(status_code, status_txt):
     print("BL status_code=" + str(status_code) + " text:" + status_txt)
@@ -65,7 +78,7 @@ def forgot_password_res(status_code, status_txt, password):
     _fe_forgot_password_res(status_code, status_txt, password)
 
 
-def want_to_play_res(status_code, status_txt, game_number, score, opponentUsername, opponentScore, opponentGameNumber):
+def want_to_play_res(status_code, status_txt, game_number, score, opponentUsername, opponentScore, serverGameNumber):
     global _callback_dict
     print("len: "+str(len(_callback_dict.keys())))
     for key in _callback_dict:
@@ -76,6 +89,14 @@ def want_to_play_res(status_code, status_txt, game_number, score, opponentUserna
     else:
         print("BL status_code=" + status_code + " text:" + status_txt)
         print(" game_number:" + game_number + "score:" + score + "opponentUsername:" + opponentUsername)
-        print("opponentScore:" + opponentScore + "opponentGameNumber: " + opponentGameNumber)
-        fe_want_to_play_res(status_code, status_txt, game_number, score, opponentUsername, opponentScore, opponentGameNumber)
+        print("serverGameNumber:" + opponentScore + "opponentGameNumber: " + serverGameNumber)
+        #switch mapping to server game number
+        del _callback_dict[game_number]
+        _callback_dict[serverGameNumber] = fe_want_to_play_res
+        fe_want_to_play_res(status_code, status_txt, game_number, score, opponentUsername, opponentScore, serverGameNumber)
 
+
+def play_XO_res(serverGameNumber, status_code, status_text, opponent_move, cell):
+    global _callback_dict
+    fe_XO_play_res = _callback_dict[serverGameNumber]
+    fe_XO_play_res(status_code, status_text, opponent_move, cell)

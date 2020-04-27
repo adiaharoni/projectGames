@@ -11,6 +11,8 @@ _login_res = None
 _register_res = None
 _forgot_password_res = None
 _want_to_play_res = None
+_play_XO_res = None
+
 
 def init():
     my_socket.connect(("127.0.0.1", 2223))
@@ -50,6 +52,18 @@ def want_to_play(want_to_play_res, username, gameId, game_number):
     sender_message = str(gameId).zfill(2) + str(game_number)
     str_data = "04" + time + str(len(username)).zfill(2) + username + sender_message
     send_q.put(str_data)
+
+def play_XO(play_XO_res, username, serverGameNumber, cell):
+    time = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    global _play_XO_res
+    _play_XO_res = play_XO_res
+    sender_message = serverGameNumber + str(cell)
+    str_data = "06" + time + str(len(username)).zfill(2) + username + sender_message
+    send_q.put(str_data)
+
+def set_play_XO_callback(play_XO_res):
+    global _play_XO_res
+    _play_XO_res = play_XO_res
 
 def set_register_res(msg):
     print("comm set_register_res")
@@ -96,8 +110,9 @@ def set_want_to_play_res(msg):
         idx = idx+2
         opponentScore = msg[idx:idx+opponentScoreLen]
         idx = idx+opponentScoreLen
-        opponentGameNumber = msg[idx:]
-        _want_to_play_res(status_code, status_txt, game_number, score, opponentUsername, opponentScore, opponentGameNumber)
+        serverGameNumber = msg[idx:]
+        _want_to_play_res(status_code, status_txt, game_number, score, opponentUsername, opponentScore, serverGameNumber)
+
 
 def set_start_game(msg):
     idx = 0
@@ -122,9 +137,38 @@ def set_start_game(msg):
     idx = idx + 2
     opponentScore = msg[idx:idx + opponentScoreLen]
     idx = idx + opponentScoreLen
-    opponentGameNumber = msg[idx:]
+    serverGameNumber = msg[idx:]
     global _want_to_play_res
-    _want_to_play_res("09", get_status_text("09"), game_number, score, opponentUsername, opponentScore, opponentGameNumber)
+    _want_to_play_res("09", get_status_text("09"), game_number, score, opponentUsername, opponentScore, serverGameNumber)
+
+
+def set_play_XO_res(msg):
+    serverGameNumber = msg[0:36]
+    status_code = msg[36:38]
+    status_text = get_status_text(status_code)
+    global _play_XO_res
+    _play_XO_res(serverGameNumber, status_code, status_text, 0, None)
+
+
+def set_opponent_play_XO(msg):
+    idx = 0
+    time1 = msg[idx:idx + 14]
+    print("time1:" + time1)
+    idx = idx + 14
+    opponentNamelen = int(msg[idx:idx + 2])
+    print("opponentNamelen:" + msg[idx:idx + 2])
+    idx = idx + 2
+    opponentUsername = msg[idx:idx + opponentNamelen]
+    print("username:" + opponentUsername)
+    idx = idx + opponentNamelen
+    serverGameNumber = msg[idx:idx + 36]
+    idx = idx + 36
+    cell = int(msg[idx:idx + 1])
+    idx = idx + 1
+    status_code = msg[idx:idx + 2]
+    status_text = get_status_text(status_code)
+    global _play_XO_res
+    _play_XO_res(serverGameNumber, status_code, status_text, 1, cell)
 
 
 #get messages from server
@@ -153,6 +197,10 @@ def client_recv(my_socket):
                 set_want_to_play_res(msg)
             elif cmdID == 5:
                 set_start_game(msg)
+            elif cmdID == 6:
+                set_play_XO_res(msg)
+            elif cmdID == 7:
+                set_opponent_play_XO(msg)
             else:
                 print("command unknown:" + recvdata)
 
@@ -189,6 +237,16 @@ def get_status_text(ret):
         mesg = "waiting"
     elif ret1 == 9:
         mesg = "game starting"
+    elif ret1 == 10:
+        mesg = "cell not valid"
+    elif ret1 == 11:
+        mesg = "it is not your turn"
+    elif ret1 == 12:
+        mesg = "it's a tie!"
+    elif ret1 == 13:
+        mesg = "you win!!!"
+    elif ret1 == 14:
+        mesg = "you lose :-( "
     elif ret1 == 99:
         mesg = "command unknown"
     return mesg

@@ -30,7 +30,7 @@ def login(p1):
     username = w.entry_username.get()
     password = w.entry_password.get()
     print(username+" "+password)
-    if username == "" or password == "" or username.isspace()== True or password.isspace() == True:
+    if username == "" or password == "" or username.isspace() == True or password.isspace() == True:
         src = w.Label_error
         src.configure(text="Error: The fills cannot be empty")
     else:

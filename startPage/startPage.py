@@ -78,8 +78,20 @@ class Toplevel1:
         self.Label1.configure(highlightcolor="black")
         self.Label1.configure(text='''Welcome to''')
 
+        self.Label2 = tk.Label(self.Canvas1)
+        self.Label2.place(relx=0.038, rely=0.4, height=191, width=474)
+        self.Label2.configure(activebackground="#f9f9f9")
+        self.Label2.configure(activeforeground="black")
+        self.Label2.configure(background="#ffb3d9")
+        self.Label2.configure(disabledforeground="#a3a3a3")
+        self.Label2.configure(font="-family {Tw Cen MT} -size 72 -weight bold")
+        self.Label2.configure(foreground="#ffffff")
+        self.Label2.configure(highlightbackground="#d9d9d9")
+        self.Label2.configure(highlightcolor="black")
+        self.Label2.configure(text='''AABox''')
+
         self.Button1 = tk.Button(self.Canvas1)
-        self.Button1.place(relx=0.669, rely=0.695, height=74, width=137)
+        self.Button1.place(relx=0.669, rely=0.8, height=74, width=137)
         self.Button1.configure(activebackground="#ececec")
         self.Button1.configure(activeforeground="#000000")
         self.Button1.configure(background="#ffffff")
@@ -120,8 +132,4 @@ class Toplevel1:
 
 if __name__ == '__main__':
     vp_start_gui()
-
-
-
-
 

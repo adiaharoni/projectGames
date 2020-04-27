@@ -1,8 +1,10 @@
 import sqlite3
 import sys
+import uuid
 
 want_to_play = {}
-dbName = "Abox.db"
+dbName = "AAbox.db"
+XOdict = {}
 
 def register(username, password, city, birthYear, mothersName):
     print("register")
@@ -49,7 +51,7 @@ def forgotPassword(username, city, birthYear, mothersName):
     print("forgotPassword")
     query = "SELECT * from USERS where username= '" + username + "' and city= '" + city + "' and birthYear= '" + birthYear + "' and mothersName= '" + mothersName + "'"
     print("query = ", query, "\n")
-    conn = sqlite3.connect('Abox.db')
+    conn = sqlite3.connect('AAbox.db')
     cursor = conn.execute(query)
     rows = cursor.fetchall()
     password = ""
@@ -93,9 +95,67 @@ def wantToPlay(username, gameID, gameNumber):
         conn.commit()
         conn.close()
         sys.stdout.flush()
-
+        serverGameNumber= startXO(username1, username)
         del want_to_play[gameID]
-        return 9, username, score, gameNumber, username1, score1, gameNumber1
+        return 9, username, score, gameNumber, username1, score1, gameNumber1, serverGameNumber
     else:
         want_to_play[gameID] = (username, gameNumber)
-        return 8, username, None, gameNumber, None, None, None
+        return 8, username, None, gameNumber, None, None, None, None
+
+def startXO(usernameX, usernameO):
+    serverGameNumber = str(uuid.uuid4())
+    board = ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
+    turn = 0
+    XOdict[serverGameNumber] = board, turn, usernameX, usernameO
+    print ("usernameX:" + usernameX + " usernameO:"+usernameO)
+    return serverGameNumber
+
+def playXO(username, serverGameNumber, cell):
+    board, turn, usernameX, usernameO = XOdict[serverGameNumber]
+    print("playXO usernameX:" + usernameX + " usernameO:" + usernameO + " cell:"+cell)
+    status_code = "00"
+    opponentUsername = None
+    if username == usernameX and turn == 0:
+        opponentUsername = usernameO
+        if board[int(cell)] == cell:
+            board[int(cell)] = "X"
+            turn = 1
+            print("X status_code:" + status_code)
+        else:
+            status_code = "10"
+    elif username == usernameO and turn == 1:
+        opponentUsername = usernameX
+        if board[int(cell)] == cell:
+            board[int(cell)] = "O"
+            turn = 0
+            print("O status_code:" + status_code)
+        else:
+            status_code = "10"
+    else:
+        status_code = "11"
+    if status_code == "00":
+        if checkWinXo(board) is True:
+            print("check win!!!:")
+            status_code = "13"
+            del XOdict[serverGameNumber]
+        elif checkTie(board) is True:
+            print("check tie!!!:")
+            status_code = "12"
+            del XOdict[serverGameNumber]
+        else:
+            XOdict[serverGameNumber] = board, turn, usernameX, usernameO
+    print("status_code:" + status_code + " opponentUsername:" + opponentUsername)
+    return status_code, opponentUsername
+
+def checkWinXo(board):
+    print("board: "+board[0] + board[1] + board[2] + board[3] + board[4] + board[5] + board[6] + board[7] + board[8])
+    if board[0] == board[1] == board[2] or board[3] == board[4] == board[5] or board[6] == board[7] == board[8] or board[0] == board[3] == board[6] or board[1] == board[4] == board[7] or board[2] == board[5] == board[8] or board[0] == board[4] == board[8] or board[2] == board[4] == board[6]:
+        return True
+    else:
+        return False
+
+def checkTie(board):
+    if board[0] != "0" and board[1] != "1" and board[2] != "2" and board[3] != "3" and board[4] != "4" and board[5] != "5" and board[6] != "6" and board[7] != "7" and board[8] != "8" and checkWinXo(board) is not True:
+        return True
+    else:
+        return False

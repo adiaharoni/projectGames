@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('Abox.db')
+conn = sqlite3.connect('AAbox.db')
 print("Opened database successfully");
 
 conn.execute('''CREATE TABLE USERS
