@@ -31,7 +31,3 @@ def destroy_window():
 if __name__ == '__main__':
     import instPage
     instPage.vp_start_gui()
-
-
-
-

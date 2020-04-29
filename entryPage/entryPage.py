@@ -13,24 +13,38 @@ except ImportError:
     py3 = True
 
 import entryPage_support
+from tkinter import messagebox
+
+w = None
 
 def vp_start_gui():
     '''Starting point when module is the main routine.'''
     global val, w, root
     root = tk.Tk()
-    top = Toplevel1 (root)
-    entryPage_support.init(root, top)
+    root.protocol("WM_DELETE_WINDOW", on_close)
+    top = Toplevel1(root)
+    if entryPage_support.init(root, top) is not True:
+        messagebox.showerror("Error", "Cannot connect to server.\nPlease run it first")
+        return
+
     root.mainloop()
 
-w = None
+
 def create_Toplevel1(root, *args, **kwargs):
     '''Starting point when module is imported by another program.'''
     global w, w_win, rt
     rt = root
     w = tk.Toplevel (root)
+    root.protocol("WM_DELETE_WINDOW", on_close)
     top = Toplevel1 (w)
     entryPage_support.init(w, top, *args, **kwargs)
     return (w, top)
+
+def on_close():
+    print ("login closing")
+    entryPage_support.on_close()
+    root.destroy()
+
 
 def destroy_Toplevel1():
     global w
@@ -57,8 +71,7 @@ class Toplevel1:
         self.style.map('.',background=
             [('selected', _compcolor), ('active',_ana2color)])
 
-        #top.geometry("659x450+804+312")
-        top.geometry("659x450+650+150")
+        top.geometry("600x451+882+239")
         top.minsize(120, 1)
         top.maxsize(1924, 1061)
         top.resizable(0, 0)
@@ -68,8 +81,7 @@ class Toplevel1:
         top.configure(highlightcolor="black")
 
         self.Frame1 = tk.Frame(top)
-        self.Frame1.place(relx=0.046, rely=0.044, relheight=0.896
-                , relwidth=0.873)
+        self.Frame1.place(relx=0.1, rely=0.067, relheight=0.896, relwidth=0.872)
         self.Frame1.configure(relief='groove')
         self.Frame1.configure(borderwidth="2")
         self.Frame1.configure(relief="groove")
@@ -98,7 +110,7 @@ class Toplevel1:
         self.entry_username.configure(selectforeground="black")
 
         self.login = tk.Button(self.Frame1)
-        self.login.place(relx=0.73, rely=0.819, height=54, width=127)
+        self.login.place(relx=0.73, rely=0.83, height=54, width=127)
         self.login.configure(activebackground="#ececec")
         self.login.configure(activeforeground="#000000")
         self.login.configure(background="#ffffff")
@@ -162,7 +174,7 @@ class Toplevel1:
         self.Label_password.configure(text='''password''')
 
         self.button_newRegister = tk.Button(self.Frame1)
-        self.button_newRegister.place(relx=0.052, rely=0.819, height=54, width=147)
+        self.button_newRegister.place(relx=0.052, rely=0.83, height=54, width=147)
         self.button_newRegister.configure(activebackground="#ececec")
         self.button_newRegister.configure(activeforeground="#000000")
         self.button_newRegister.configure(background="#ffffff")
@@ -188,7 +200,7 @@ class Toplevel1:
         self.Label1.configure(text='''Login''')
 
         self.button_forgot = tk.Button(self.Frame1)
-        self.button_forgot.place(relx=0.365, rely=0.819, height=54, width=177)
+        self.button_forgot.place(relx=0.365, rely=0.83, height=54, width=177)
         self.button_forgot.configure(activebackground="#ececec")
         self.button_forgot.configure(activeforeground="#000000")
         self.button_forgot.configure(background="#ffffff")

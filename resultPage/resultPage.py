@@ -36,8 +36,13 @@ def create_Toplevel1(root, *args, **kwargs):
     rt = root
     w = tk.Toplevel (root)
     top = Toplevel1 (w)
+    w.protocol("WM_DELETE_WINDOW", on_close)
     resultPage_support.init(w, top, *args, **kwargs)
     return (w, top)
+
+def on_close():
+    print("Results closing")
+    resultPage_support.on_close(False)
 
 def destroy_Toplevel1():
     global w
@@ -111,7 +116,7 @@ class Toplevel1:
         self.playAgain_Button.configure(activebackground="#ececec")
         self.playAgain_Button.configure(activeforeground="#ffffff")
         self.playAgain_Button.configure(background="#ffffff")
-        self.playAgain_Button.configure(command=resultPage_support.open_choosePage)
+        self.playAgain_Button.configure(command=lambda: resultPage_support.on_close(True))
         self.playAgain_Button.configure(disabledforeground="#a3a3a3")
         self.playAgain_Button.configure(font=font14)
         self.playAgain_Button.configure(foreground="#89c99f")
@@ -126,7 +131,7 @@ class Toplevel1:
         self.close_Button.configure(activebackground="#ececec")
         self.close_Button.configure(activeforeground="#000000")
         self.close_Button.configure(background="#ffffff")
-        self.close_Button.configure(command=resultPage_support.destroy_window)
+        self.close_Button.configure(command=lambda: resultPage_support.on_close(False))
         self.close_Button.configure(cursor="fleur")
         self.close_Button.configure(disabledforeground="#a3a3a3")
         self.close_Button.configure(font=font14)

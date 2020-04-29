@@ -3,13 +3,14 @@ import uuid
 import clientBL
 
 symbol = None
-board = ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
+board = ["00", "01", "02", "03", "04", "05", "06", "07", "08"]
 buttons = []
 turn = 0
-_serverGameNumber = ""
+_serverGameNumber = None
 _page_game_number = None
 _opponent_user_name = ""
 _abort_game = None
+abort_game = True
 
 try:
     import Tkinter as tk
@@ -46,52 +47,53 @@ def fe_want_to_play_res(status_code, status_txt, game_number, score, opponentUse
         if symbol == None:
             symbol = "O"
         symbol_Label.configure(text="you are: " + symbol)
+        w.turn_Label.configure(text="X turn")
         enableButtons(False)
         global _serverGameNumber
         _serverGameNumber = serverGameNumber
-        clientBL.set_play_XO_callback(fe_XO_play_res, _serverGameNumber)
+        clientBL.set_play_cell_game_callback(fe_XO_play_res, _serverGameNumber)
 
 def enableButtons(waiting):
     global w
-    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[0] != "0" or waiting is True:
+    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[0] != "00" or waiting is True:
         w.Button0.configure(state='disabled')
     else:
         w.Button0.configure(state='normal')
-    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[1] != "1" or waiting is True:
+    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[1] != "01" or waiting is True:
         w.Button1.configure(state='disabled')
     else:
         w.Button1.configure(state='normal')
-    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[2] != "2" or waiting is True:
+    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[2] != "02" or waiting is True:
         w.Button2.configure(state='disabled')
     else:
         w.Button2.configure(state='normal')
 
-    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[3] != "3" or waiting is True:
+    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[3] != "03" or waiting is True:
         w.Button3.configure(state='disabled')
     else:
         w.Button3.configure(state='normal')
 
-    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[4] != "4" or waiting is True:
+    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[4] != "04" or waiting is True:
         w.Button4.configure(state='disabled')
     else:
         w.Button4.configure(state='normal')
 
-    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[5] != "5" or waiting is True:
+    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[5] != "05" or waiting is True:
         w.Button5.configure(state='disabled')
     else:
         w.Button5.configure(state='normal')
 
-    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[6] != "6" or waiting is True:
+    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[6] != "06" or waiting is True:
         w.Button6.configure(state='disabled')
     else:
         w.Button6.configure(state='normal')
 
-    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[7] != "7" or waiting is True:
+    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[7] != "07" or waiting is True:
         w.Button7.configure(state='disabled')
     else:
         w.Button7.configure(state='normal')
 
-    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[8] != "8" or waiting is True:
+    if turn == 0 and symbol == "O" or turn == 1 and symbol == "X" or board[8] != "08" or waiting is True:
         w.Button8.configure(state='disabled')
     else:
         w.Button8.configure(state='normal')
@@ -134,11 +136,15 @@ def fe_XO_play_res(status_code, status_txt, opponent_move, cell, score, opponent
         global turn
         if turn == 0:
             turn = 1
+            w.turn_Label.configure(text="O turn")
         else:
             turn = 0
+            w.turn_Label.configure(text="X turn")
         waiting = False
         enableButtons(waiting)
-    elif status_code == "12" or status_code == "13" or status_code == "14":
+    elif status_code == "12" or status_code == "13" or status_code == "14" or status_code == "15":
+        global abort_game
+        abort_game = False
         startResultPage(status_code, status_txt, score, opponent_score)
     else:
         opponentName_Label = w.opponentName_Label
@@ -149,11 +155,16 @@ def init(top, gui, *args, **kwargs):
     w = gui
     top_level = top
     root = top
-    clientBL.want_to_play(fe_want_to_play_res, "00", uuid.uuid4())
+    start_game()
 
-def set_close_callback(abort_game):
-    global _abort_game
-    _abort_game = abort_game
+def start_game():
+    global _page_game_number
+    _page_game_number = str(uuid.uuid4())
+    clientBL.want_to_play(fe_want_to_play_res, "00", _page_game_number)
+
+def set_close_callback(game_over):
+    global _game_over
+    _game_over = game_over
 
 def startResultPage(status_code, status_txt, score, opponent_score):
     sys.stdout.flush()
@@ -163,7 +174,7 @@ def startResultPage(status_code, status_txt, score, opponent_score):
     resultPage.create_Toplevel1(root, 'Hello', top_level)
     global _opponent_user_name
     print ("startResultPage _opponent_user_name:"+_opponent_user_name)
-    resultPage_support.set_results(status_code, status_txt, score, _opponent_user_name, opponent_score)
+    resultPage_support.set_results(status_code, status_txt, score, _opponent_user_name, opponent_score, game_over)
 
 
 def button_click(cell, button):
@@ -171,18 +182,29 @@ def button_click(cell, button):
     global w
     global _serverGameNumber
     button['text'] = symbol
+    board[cell] = symbol
     waiting = True
     enableButtons(waiting)
-    clientBL.playXO(fe_XO_play_res, _serverGameNumber, cell)
+    clientBL.play_cell_game(fe_XO_play_res, _serverGameNumber, cell)
 
 def on_close():
-    global _abort_game
-    if _abort_game is not None:
-        _abort_game("00", _serverGameNumber, 1)
+    print("XOPage_support on_close")
+    global _game_over, _serverGameNumber, _page_game_number, abort_game
+    if _game_over is not None:
+        if _serverGameNumber == None:
+            _game_over("00", _page_game_number, abort_game, False)
+        else:
+            _game_over("00", _serverGameNumber, abort_game, False)
+
+def game_over(play_again):
+    destroy_window()
+    global _game_over, _serverGameNumber, abort_game
+    if _game_over is not None:
+        _game_over("00", _serverGameNumber, abort_game, play_again)
+
 
 def destroy_window():
     # Function which closes the window.
-
     global top_level
     top_level.destroy()
     top_level = None

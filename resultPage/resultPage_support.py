@@ -6,6 +6,7 @@
 #    Apr 27, 2020 03:20:17 PM +0300  platform: Windows NT
 
 import sys
+_game_over = None
 
 try:
     import Tkinter as tk
@@ -25,19 +26,24 @@ def init(top, gui, *args, **kwargs):
     top_level = top
     root = top
 
-def set_results(status_code, status_txt, score, opponent_user_name, opponent_score):
-    global w
-    print (opponent_user_name)
-    w.answer_Label.configure(text=status_txt)
-    w.userScore_Label.configure(text="my score: " + score)
-    w.opponentScore_Label.configure(text=opponent_user_name+ "'s score: " + opponent_score)
+def set_results(status_code, status_txt, score, opponent_user_name, opponent_score, game_over):
+    global w, _game_over
+    print(opponent_user_name)
+    if status_code == "15":
+        w.answer_Label.configure(text="You win!!! opponent quit")
+        w.answer_Label.configure(font="-family {Tw Cen MT} -size 24 -weight bold")
+    else:
+        w.answer_Label.configure(text=status_txt)
+    w.userScore_Label.configure(text="your score: " + score)
+    w.opponentScore_Label.configure(text=opponent_user_name + "'s score: " + opponent_score)
+    _game_over = game_over
 
 
-def open_choosePage():
-    sys.stdout.flush()
-    sys.path.append('..\\chooseGamePage')
-    import chooseGamePage
-    chooseGamePage.create_Toplevel1(root, 'Hello', top_level)
+def on_close(play_again):
+    global _game_over
+    if _game_over is not None:
+        _game_over(play_again)
+    destroy_window()
 
 
 def destroy_window():
