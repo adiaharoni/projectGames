@@ -64,8 +64,8 @@ class Toplevel1:
         top.geometry("600x450+650+150")
         top.minsize(120, 1)
         top.maxsize(1924, 1061)
-        top.resizable(1, 1)
-        top.title("New Toplevel")
+        top.resizable(0, 0)
+        top.title("Forgot password")
         top.configure(background="#d9d9d9")
 
         self.Frame1 = tk.Frame(top)

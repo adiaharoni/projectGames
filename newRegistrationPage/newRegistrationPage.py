@@ -1,4 +1,5 @@
 import sys
+
 try:
     import Tkinter as tk
 except ImportError:
@@ -49,8 +50,8 @@ class Toplevel1:
         top.geometry("600x434+535+232")
         top.minsize(120, 1)
         top.maxsize(1924, 1061)
-        top.resizable(1, 1)
-        top.title("New Toplevel")
+        top.resizable(0, 0)
+        top.title("Registration")
         top.configure(background="#d9d9d9")
         top.configure(highlightbackground="#d9d9d9")
         top.configure(highlightcolor="black")

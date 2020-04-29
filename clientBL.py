@@ -11,6 +11,8 @@ _username = ""
 def init():
     clientComm.init()
 
+def get_user_name():
+    return _username
 
 def register(fe_register_res,username, password, city, birthYear, mothersName):
     global _fe_register_res
@@ -96,7 +98,7 @@ def want_to_play_res(status_code, status_txt, game_number, score, opponentUserna
         fe_want_to_play_res(status_code, status_txt, game_number, score, opponentUsername, opponentScore, serverGameNumber)
 
 
-def play_XO_res(serverGameNumber, status_code, status_text, opponent_move, cell):
+def play_XO_res(serverGameNumber, status_code, status_text, opponent_move, cell, score, opponent_score):
     global _callback_dict
     fe_XO_play_res = _callback_dict[serverGameNumber]
-    fe_XO_play_res(status_code, status_text, opponent_move, cell)
+    fe_XO_play_res(status_code, status_text, opponent_move, cell, score, opponent_score)

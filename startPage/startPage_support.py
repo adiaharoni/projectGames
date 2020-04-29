@@ -15,9 +15,10 @@ except ImportError:
 def startMenuPage():
     sys.stdout.flush()
     sys.path.append('..\menuPage')
+    root.destroy()
     import menuPage
-    menuPage.create_Toplevel1(root, 'Hello', top_level)
-
+    #menuPage.create_Toplevel1(root, 'Hello', top_level)
+    menuPage.vp_start_gui()
 
 def init(top, gui, *args, **kwargs):
     global w, top_level, root

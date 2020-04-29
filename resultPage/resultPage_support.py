@@ -25,6 +25,21 @@ def init(top, gui, *args, **kwargs):
     top_level = top
     root = top
 
+def set_results(status_code, status_txt, score, opponent_user_name, opponent_score):
+    global w
+    print (opponent_user_name)
+    w.answer_Label.configure(text=status_txt)
+    w.userScore_Label.configure(text="my score: " + score)
+    w.opponentScore_Label.configure(text=opponent_user_name+ "'s score: " + opponent_score)
+
+
+def open_choosePage():
+    sys.stdout.flush()
+    sys.path.append('..\\chooseGamePage')
+    import chooseGamePage
+    chooseGamePage.create_Toplevel1(root, 'Hello', top_level)
+
+
 def destroy_window():
     # Function which closes the window.
     global top_level

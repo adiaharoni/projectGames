@@ -37,7 +37,16 @@ def create_Toplevel1(root, *args, **kwargs):
     w = tk.Toplevel (root)
     top = Toplevel1 (w)
     chooseGamePage_support.init(w, top, *args, **kwargs)
+    w.protocol("WM_DELETE_WINDOW", on_close)
     return (w, top)
+
+def on_close():
+    print ("chooseGamePage closing")
+    chooseGamePage_support.on_close()
+    w.destroy()
+
+def set_close_callback(abort_user):
+    chooseGamePage_support.set_close_callback(abort_user)
 
 def destroy_Toplevel1():
     global w
@@ -63,8 +72,8 @@ class Toplevel1:
         top.geometry("600x450+650+150")
         top.minsize(120, 1)
         top.maxsize(1924, 1061)
-        top.resizable(1, 1)
-        top.title("New Toplevel")
+        top.resizable(0, 0)
+        top.title("Choose Game")
         top.configure(background="#d9d9d9")
 
         self.Frame1 = tk.Frame(top)
@@ -102,6 +111,7 @@ class Toplevel1:
         self.button_4InARow.place(relx=0.577, rely=0.405, height=174, width=197)
         self.button_4InARow.configure(activebackground="#ececec")
         self.button_4InARow.configure(activeforeground="#000000")
+        self.button_4InARow.configure(command=chooseGamePage_support.startFourInARowPage)
         self.button_4InARow.configure(background="#ffffff")
         self.button_4InARow.configure(cursor="fleur")
         self.button_4InARow.configure(disabledforeground="#a3a3a3")

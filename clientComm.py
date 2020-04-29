@@ -13,9 +13,18 @@ _forgot_password_res = None
 _want_to_play_res = None
 _play_XO_res = None
 
+def connect_server():
+    try:
+        my_socket.connect(("127.0.0.1", 2223))
+    except:
+        print("error connecting to the server")
+        return False
+    return True
 
 def init():
-    my_socket.connect(("127.0.0.1", 2223))
+    if connect_server() is not True:
+		#TODO return false?
+        return
     sendThread = Thread(target= client_send, args=(my_socket,))
     sendThread.start()
     recvThread = Thread(target= client_recv, args=(my_socket,))
@@ -113,6 +122,17 @@ def set_want_to_play_res(msg):
         serverGameNumber = msg[idx:]
         _want_to_play_res(status_code, status_txt, game_number, score, opponentUsername, opponentScore, serverGameNumber)
 
+def parse_scores(msg):
+    idx = 0
+    scoreLen = int(msg[idx:idx + 2])
+    idx = idx + 2
+    score = msg[idx:idx + scoreLen]
+    idx = idx + scoreLen
+    opponentScoreLen = int(msg[idx:idx + 2])
+    idx = idx + 2
+    opponentScore = msg[idx:idx + opponentScoreLen]
+    idx = idx + opponentScoreLen
+    return idx, score, opponentScore
 
 def set_start_game(msg):
     idx = 0
@@ -129,25 +149,20 @@ def set_start_game(msg):
     idx = idx+2
     game_number = msg[idx:idx+36]
     idx = idx+36
-    scoreLen = int(msg[idx:idx + 2])
-    idx = idx + 2
-    score = msg[idx:idx + scoreLen]
-    idx = idx + scoreLen
-    opponentScoreLen = int(msg[idx:idx + 2])
-    idx = idx + 2
-    opponentScore = msg[idx:idx + opponentScoreLen]
-    idx = idx + opponentScoreLen
+    parse_idx, score, opponent_score = parse_scores(msg[idx:])
+    idx = idx + parse_idx
     serverGameNumber = msg[idx:]
     global _want_to_play_res
-    _want_to_play_res("09", get_status_text("09"), game_number, score, opponentUsername, opponentScore, serverGameNumber)
+    _want_to_play_res("09", get_status_text("09"), game_number, score, opponentUsername, opponent_score, serverGameNumber)
 
 
 def set_play_XO_res(msg):
     serverGameNumber = msg[0:36]
     status_code = msg[36:38]
     status_text = get_status_text(status_code)
+    parse_idx, score, opponent_score = parse_scores(msg[38:])
     global _play_XO_res
-    _play_XO_res(serverGameNumber, status_code, status_text, 0, None)
+    _play_XO_res(serverGameNumber, status_code, status_text, 0, None, score, opponent_score)
 
 
 def set_opponent_play_XO(msg):
@@ -166,9 +181,11 @@ def set_opponent_play_XO(msg):
     cell = int(msg[idx:idx + 1])
     idx = idx + 1
     status_code = msg[idx:idx + 2]
+    idx = idx + 2
     status_text = get_status_text(status_code)
+    parse_idx, score, opponent_score = parse_scores(msg[idx:])
     global _play_XO_res
-    _play_XO_res(serverGameNumber, status_code, status_text, 1, cell)
+    _play_XO_res(serverGameNumber, status_code, status_text, 1, cell, score, opponent_score)
 
 
 #get messages from server
@@ -246,7 +263,7 @@ def get_status_text(ret):
     elif ret1 == 13:
         mesg = "you win!!!"
     elif ret1 == 14:
-        mesg = "you lose :-( "
+        mesg = "you lose"
     elif ret1 == 99:
         mesg = "command unknown"
     return mesg

@@ -7,6 +7,9 @@ board = ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
 buttons = []
 turn = 0
 _serverGameNumber = ""
+_page_game_number = None
+_opponent_user_name = ""
+_abort_game = None
 
 try:
     import Tkinter as tk
@@ -35,9 +38,11 @@ def fe_want_to_play_res(status_code, status_txt, game_number, score, opponentUse
         symbol = "X"
         enableButtons(True)
     else:
+        global _opponent_user_name
+        _opponent_user_name = opponentUsername
         opponentName_Label.configure(text= "opponent: "+opponentUsername)
         opponentScore_Label.configure(text="opponent score: " + opponentScore)
-        userScore_Label.configure(text="my score: " + score)
+        userScore_Label.configure(text="your score: " + score)
         if symbol == None:
             symbol = "O"
         symbol_Label.configure(text="you are: " + symbol)
@@ -114,7 +119,7 @@ def update_board(cell, symbol):
         w.Button8.configure(text=symbol)
 
 
-def fe_XO_play_res(status_code, status_txt, opponent_move, cell):
+def fe_XO_play_res(status_code, status_txt, opponent_move, cell, score, opponent_score):
     print("fe_XO_play_res opponent_move:" + str(opponent_move) + " cell:"+str(cell))
     global w
     if opponent_move == 1:
@@ -133,9 +138,11 @@ def fe_XO_play_res(status_code, status_txt, opponent_move, cell):
             turn = 0
         waiting = False
         enableButtons(waiting)
+    elif status_code == "12" or status_code == "13" or status_code == "14":
+        startResultPage(status_code, status_txt, score, opponent_score)
     else:
         opponentName_Label = w.opponentName_Label
-        opponentName_Label.configure(text=status_txt + " (" + status_code + ")")
+        opponentName_Label.configure(text=status_txt)
 
 def init(top, gui, *args, **kwargs):
     global w, top_level, root
@@ -143,6 +150,21 @@ def init(top, gui, *args, **kwargs):
     top_level = top
     root = top
     clientBL.want_to_play(fe_want_to_play_res, "00", uuid.uuid4())
+
+def set_close_callback(abort_game):
+    global _abort_game
+    _abort_game = abort_game
+
+def startResultPage(status_code, status_txt, score, opponent_score):
+    sys.stdout.flush()
+    sys.path.append('..\\resultPage')
+    import resultPage
+    import resultPage_support
+    resultPage.create_Toplevel1(root, 'Hello', top_level)
+    global _opponent_user_name
+    print ("startResultPage _opponent_user_name:"+_opponent_user_name)
+    resultPage_support.set_results(status_code, status_txt, score, _opponent_user_name, opponent_score)
+
 
 def button_click(cell, button):
     global symbol
@@ -153,8 +175,14 @@ def button_click(cell, button):
     enableButtons(waiting)
     clientBL.playXO(fe_XO_play_res, _serverGameNumber, cell)
 
+def on_close():
+    global _abort_game
+    if _abort_game is not None:
+        _abort_game("00", _serverGameNumber, 1)
+
 def destroy_window():
     # Function which closes the window.
+
     global top_level
     top_level.destroy()
     top_level = None

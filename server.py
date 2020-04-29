@@ -124,26 +124,26 @@ def wantToPlay(time1, username, command, sender_msg):
     return ret
 
 
-def opponentPlayXO(username, opponentUsername, serverGameNumber, cell, status_code):
-    print("Server.opponentPlayXO serverGameNumber:" + serverGameNumber + " cell:" + cell)
+def opponent_play_cell(username, opponentUsername, serverGameNumber, cell, status_code, score, opponent_score):
+    print("Server.opponent_play_cell serverGameNumber:" + serverGameNumber + " cell:" + cell)
     time = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-    sender_message = serverGameNumber + str(cell) + str(status_code).zfill(2)
+    sender_message = serverGameNumber + str(cell) + str(status_code).zfill(2) + str(len(str(score))).zfill(2) + str(score) + str(len(str(opponent_score))).zfill(2) + str(opponent_score)
     str_data = "07" + time + str(len(opponentUsername)).zfill(2) + opponentUsername + sender_message
-    print("Server.opponentPlayXO sending:" + str_data)
+    print("Server.opponent_play_cell sending:" + str_data)
     messages_to_send.append((users[username], str.encode(str_data)))
 
-def playXO(time1, username, command, sender_msg):
+def play_cell(time1, username, command, sender_msg):
     serverGameNumber = sender_msg[0:36]
     cell = sender_msg[36:]
-    print("Server.playXO serverGameNumber:" + serverGameNumber + " cell:" + cell)
-    status_code, opponentUsername = serverBL.playXO(username, serverGameNumber, cell)
+    print("Server.play cell serverGameNumber:" + serverGameNumber + " cell:" + cell)
+    status_code, opponentUsername, score, score1 = serverBL.play_cell_game(username, serverGameNumber, cell)
     if status_code == "12":
-        opponentPlayXO(opponentUsername, username, serverGameNumber, cell, "12")
+        opponent_play_cell(opponentUsername, username, serverGameNumber, cell, "12", score1, score)
     elif status_code == "13":
-        opponentPlayXO(opponentUsername, username, serverGameNumber, cell, "14")
+        opponent_play_cell(opponentUsername, username, serverGameNumber, cell, "14", score1, score)
     else:
-        opponentPlayXO(opponentUsername, username, serverGameNumber, cell, status_code)
-    return str(command).zfill(2) + serverGameNumber + str(status_code).zfill(2)
+        opponent_play_cell(opponentUsername, username, serverGameNumber, cell, status_code, 0, 0)
+    return str(command).zfill(2) + serverGameNumber + str(status_code).zfill(2) + str(len(str(score))).zfill(2) + str(score) + str(len(str(score1))).zfill(2) + str(score1)
 
 while (True):
     rlist, wlist, xlist = select.select([server_socket] + open_client_sockets, open_client_sockets, [])
@@ -155,30 +155,40 @@ while (True):
             print ("open_client_sockets.append(new_socket)")
         else:
             # msg from exiting client
-            data = current_socket.recv(1024)
-            if data == "":
-                open_client_sockets.remove(current_socket)
-                for username, socket in users.items():
+            data = ""
+            error = False
+            try:
+                data = current_socket.recv(1024)
+            except:
+                error = True
+                for socket in open_client_sockets:
                     if socket == current_socket:
-                        del users[username]
-                print ("Connection with client closed.")
-            else:
-                (time1, username, command, sender_msg) = parse_header(data)
-                ret = 0
-                if command == 1:
-                    ret = register(time1, username, command, sender_msg)
-                elif command == 2:
-                    ret = login(current_socket, time1, username, command, sender_msg)
-                elif command == 3:
-                    ret = forgotPassword(time1, username, command, sender_msg)
-                elif command == 4:
-                    ret = wantToPlay(time1, username, command, sender_msg)
-                elif command == 6:
-                    ret = playXO(time1, username, command, sender_msg)
+                        open_client_sockets.remove(current_socket)
+                print("data = current_socket.recv(1024) exception")
+            if error is False:
+                if data == "":
+                    open_client_sockets.remove(current_socket)
+                    for username, socket in users.items():
+                        if socket == current_socket:
+                            del users[username]
+                    print ("Connection with client closed.")
                 else:
-                    #command unknown
-                    ret = str(command).zfill(2) + "99"
-                print("sending: " + ret)
-                data = str.encode(ret)
-                current_socket.send(data)
+                    (time1, username, command, sender_msg) = parse_header(data)
+                    ret = 0
+                    if command == 1:
+                        ret = register(time1, username, command, sender_msg)
+                    elif command == 2:
+                        ret = login(current_socket, time1, username, command, sender_msg)
+                    elif command == 3:
+                        ret = forgotPassword(time1, username, command, sender_msg)
+                    elif command == 4:
+                        ret = wantToPlay(time1, username, command, sender_msg)
+                    elif command == 6:
+                        ret = play_cell(time1, username, command, sender_msg)
+                    else:
+                        #command unknown
+                        ret = str(command).zfill(2) + "99"
+                    print("sending: " + ret)
+                    data = str.encode(ret)
+                    current_socket.send(data)
     send_waiting_messages(wlist)

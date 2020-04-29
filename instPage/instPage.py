@@ -91,9 +91,9 @@ class Toplevel1:
         self.inst_biglabel.configure(relief="flat")
         self.inst_biglabel.configure(text='''In order to start playing, you should login to your profile
 with your username and password.
-Then, you should choose a play-"X/O" or "four in a row" and wait
-for another player. 
-If after a minute nobody enters, you can switch to the second play.
+Then, you should choose a play-"X/O" or "Four In A Row" and wait
+for another player. If there is a player who is already waiting,
+you will start the play immediately.
 In the end of the game you will score points to your profile:
 If you win the game- you will score 10 points, 
 If it is a tie- you will score 5 points 

@@ -57,11 +57,12 @@ class Toplevel1:
         self.style.map('.',background=
             [('selected', _compcolor), ('active',_ana2color)])
 
-        top.geometry("659x450+804+312")
+        #top.geometry("659x450+804+312")
+        top.geometry("659x450+650+150")
         top.minsize(120, 1)
         top.maxsize(1924, 1061)
-        top.resizable(1, 1)
-        top.title("New Toplevel")
+        top.resizable(0, 0)
+        top.title("Login")
         top.configure(background="#d9d9d9")
         top.configure(highlightbackground="#d9d9d9")
         top.configure(highlightcolor="black")

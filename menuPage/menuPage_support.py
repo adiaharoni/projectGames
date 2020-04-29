@@ -14,9 +14,11 @@ except ImportError:
 
 def startEntryPage():
     sys.stdout.flush()
+    root.destroy()
     sys.path.append('..\entryPage')
     import entryPage
-    entryPage.create_Toplevel1(root, 'Hello', top_level)
+    #entryPage.create_Toplevel1(root, 'Hello', top_level)
+    entryPage.vp_start_gui()
 
 def startInstPage():
     sys.stdout.flush()

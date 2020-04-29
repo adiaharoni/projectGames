@@ -7,6 +7,8 @@
 
 import sys
 
+_abort_user = None
+
 try:
     import Tkinter as tk
 except ImportError:
@@ -19,17 +21,43 @@ except ImportError:
     import tkinter.ttk as ttk
     py3 = True
 
-def startXOPage():
-    sys.stdout.flush()
-    sys.path.append('..\\XOPage')
-    import XOPage
-    XOPage.create_Toplevel1(root, 'Hello', top_level)
-
 def init(top, gui, *args, **kwargs):
     global w, top_level, root
     w = gui
     top_level = top
     root = top
+
+def startXOPage():
+    sys.stdout.flush()
+    sys.path.append('..\\XOPage')
+    global w
+    w.button_XO.configure(state='disabled')
+    import XOPage
+    XOPage.create_Toplevel1(root, 'Hello', top_level)
+    XOPage.set_close_callback(abort_game)
+
+def startFourInARowPage():
+    sys.stdout.flush()
+    sys.path.append('..\\fourInARowPage')
+    global w
+    w.button_4InARow.configure(state='disabled')
+    import fourInARowPage
+    fourInARowPage.create_Toplevel1(root, 'Hello', top_level)
+
+def abort_game(gameid, game_number, game_state):
+    global w
+    w.button_XO.configure(state='normal')
+
+
+def set_close_callback(abort_user):
+    global _abort_user
+    _abort_user = abort_user
+
+def on_close():
+    global _abort_user
+    if _abort_user is not None:
+        _abort_user()
+
 
 def destroy_window():
     # Function which closes the window.
